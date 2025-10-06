@@ -20,6 +20,9 @@ import openpi.models.tokenizer as _tokenizer
 import openpi.policies.aloha_policy as aloha_policy
 import openpi.policies.droid_policy as droid_policy
 import openpi.policies.libero_policy as libero_policy
+import openpi.policies.vlabench_policy as vlabench_policy
+import openpi.policies.bridge_policy as bridge_policy
+import openpi.policies.fractal_policy as fractal_policy
 import openpi.shared.download as _download
 import openpi.shared.normalize as _normalize
 import openpi.training.droid_rlds_dataset as droid_rlds_dataset
@@ -171,6 +174,7 @@ class DataConfigFactory(abc.ABC):
     # Base config that will be updated by the factory.
     base_config: tyro.conf.Suppress[DataConfig | None] = None
 
+
     @abc.abstractmethod
     def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
         """Create a data config."""
@@ -276,6 +280,114 @@ class LeRobotAlohaDataConfig(DataConfigFactory):
             action_sequence_keys=self.action_sequence_keys,
         )
 
+@dataclasses.dataclass(frozen=True)
+class LeRobotBridgeDataConfig(DataConfigFactory):
+    use_quantile_norm: bool = True
+
+    # Action keys that will be used to read the action sequence from the dataset.
+    action_sequence_keys: Sequence[str] = ("action",)
+
+    prompt_from_task: bool = True
+
+    @override
+    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
+        # Make inputs look like they come from the Libero environment
+        repack_transform = _transforms.Group(
+            inputs=[
+                _transforms.RepackTransform(
+                    {
+                        "observation/primary_image": "observation.images.image_0",
+                        # "observation/left_yellow_image": "observation.images.image_1",
+                        # "observation/right_blue_image": "observation.images.image_2",
+                        # "observation/wirst_image": "observation.images.image_3",
+                        "observation/state": "observation.state",
+                        "actions": "action",
+                        "prompt": "prompt",
+                    }
+                )
+            ]
+        )
+
+        # Prepare data for policy training
+        # Convert images to uint8 numpy arrays, add masks
+        data_transforms = _transforms.Group(
+            inputs=[
+                bridge_policy.BridgeInputs(
+                    action_dim=model_config.action_dim,
+                    model_type=model_config.model_type,
+                )
+            ],
+            outputs=[bridge_policy.BridgeOutputs()],
+        )
+
+        # Model transforms include things like tokenizing the prompt and action targets
+        model_transforms = ModelTransformFactory()(model_config)
+
+        return dataclasses.replace(
+            self.create_base_config(assets_dirs, model_config),
+            repack_transforms=repack_transform,
+            data_transforms=data_transforms,
+            model_transforms=model_transforms,
+            use_quantile_norm=self.use_quantile_norm,
+            action_sequence_keys=self.action_sequence_keys,
+            prompt_from_task=self.prompt_from_task,
+        )
+
+@dataclasses.dataclass(frozen=True)
+class LeRobotFractalDataConfig(DataConfigFactory):
+    use_quantile_norm: bool = True
+
+    # TODO: This is just copy of LeRobotBridgeDataConfig, should be refactored for fractal dataset
+
+    # Action keys that will be used to read the action sequence from the dataset.
+    action_sequence_keys: Sequence[str] = ("action",)
+
+    prompt_from_task: bool = True
+
+    @override
+    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
+        # Make inputs look like they come from the Libero environment
+        repack_transform = _transforms.Group(
+            inputs=[
+                _transforms.RepackTransform(
+                    {
+                        "observation/primary_image": "observation.images.image",
+                        # "observation/left_yellow_image": "observation.images.image_1",
+                        # "observation/right_blue_image": "observation.images.image_2",
+                        # "observation/wirst_image": "observation.images.image_3",
+                        "observation/state": "observation.state",
+                        "actions": "action",
+                        "prompt": "prompt",
+                    }
+                )
+            ]
+        )
+
+        # Prepare data for policy training
+        # Convert images to uint8 numpy arrays, add masks
+        data_transforms = _transforms.Group(
+            inputs=[
+                fractal_policy.FractalInputs(
+                    action_dim=model_config.action_dim,
+                    model_type=model_config.model_type,
+                )
+            ],
+            outputs=[fractal_policy.FractalOutputs()],
+        )
+
+        # Model transforms include things like tokenizing the prompt and action targets
+        model_transforms = ModelTransformFactory()(model_config)
+
+        return dataclasses.replace(
+            self.create_base_config(assets_dirs, model_config),
+            repack_transforms=repack_transform,
+            data_transforms=data_transforms,
+            model_transforms=model_transforms,
+            use_quantile_norm=self.use_quantile_norm,
+            action_sequence_keys=self.action_sequence_keys,
+            prompt_from_task=self.prompt_from_task,
+        )
+
 
 @dataclasses.dataclass(frozen=True)
 class LeRobotLiberoDataConfig(DataConfigFactory):
@@ -351,6 +463,47 @@ class LeRobotLiberoDataConfig(DataConfigFactory):
             repack_transforms=repack_transform,
             data_transforms=data_transforms,
             model_transforms=model_transforms,
+        )
+
+
+@dataclasses.dataclass(frozen=True)
+class LeRobotVLABenchDataConfig(DataConfigFactory):
+    """Config for training on VLABench dataset."""
+
+    repo_id: str = "joey/vlabench_base_new"
+    prompt_from_task: bool = True
+
+    @override
+    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
+        repack_transform = _transforms.Group(
+            inputs=[
+                _transforms.RepackTransform(
+                    {
+                        "observation/image": "image",
+                        "observation/wrist_image": "wrist_image",
+                        "observation/state": "state",
+                        "actions": "actions",
+                        "prompt": "prompt",
+                    }
+                )
+            ]
+        )
+
+        data_transforms = _transforms.Group(
+            inputs=[
+                vlabench_policy.VLABenchInputs(action_dim=model_config.action_dim, model_type=model_config.model_type)
+            ],
+            outputs=[vlabench_policy.VLABenchOutputs()],
+        )
+
+        model_transforms = ModelTransformFactory()(model_config)
+
+        return dataclasses.replace(
+            self.create_base_config(assets_dirs, model_config),
+            repack_transforms=repack_transform,
+            data_transforms=data_transforms,
+            model_transforms=model_transforms,
+            prompt_from_task=self.prompt_from_task,
         )
 
 
@@ -732,6 +885,93 @@ _CONFIGS = [
         ema_decay=None,
     ),
     TrainConfig(
+        name="pi0_fast_bridge",
+        model=pi0_fast.Pi0FASTConfig(action_dim=7, action_horizon=10, max_token_len=180),
+        data=LeRobotBridgeDataConfig(
+            repo_id="local/bridge_lerobot",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_fast_base/params"),
+        num_train_steps=30_000,
+    ),
+    TrainConfig(
+        name="pi0_bridge_lora",
+        model=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"),
+        data=LeRobotBridgeDataConfig(
+            repo_id="local/bridge_lerobot",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("s3://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=30_000,
+        freeze_filter=pi0_config.Pi0Config(
+            paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
+        ).get_freeze_filter(),
+        ema_decay=None,
+        num_workers=8,
+    ),
+    TrainConfig(
+        ###########################################################
+        name="pi0_bridge",
+        model=pi0_config.Pi0Config(),
+        data=LeRobotBridgeDataConfig(
+            repo_id="/home/leesangoh/datasets/bridge_orig_lerobot",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("s3://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=30_000,
+        ema_decay=None,
+        num_workers=8,
+    ),
+    TrainConfig(
+        name="pi0_fast_fractal",
+        model=pi0_fast.Pi0FASTConfig(action_dim=7, action_horizon=10, max_token_len=180),
+        data=LeRobotFractalDataConfig(
+            repo_id="local/fractal_lerobot",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_fast_base/params"),
+        num_train_steps=30_000,
+    ),
+    TrainConfig(
+        name="pi0_fractal_lora",
+        model=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"),
+        data=LeRobotFractalDataConfig(
+            repo_id="local/fractal_lerobot",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("s3://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=30_000,
+        freeze_filter=pi0_config.Pi0Config(
+            paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
+        ).get_freeze_filter(),
+        ema_decay=None,
+        num_workers=8,
+    ),
+    TrainConfig(
+        name="pi0_fractal",
+        model=pi0_config.Pi0Config(),
+        data=LeRobotFractalDataConfig(
+            repo_id="/home/leesangoh/datasets/fractal20220817_data_lerobot",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("s3://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=30_000,
+        ema_decay=None,
+        num_workers=8,
+    ),
+    TrainConfig(
         name="pi05_libero",
         model=pi0_config.Pi0Config(pi05=True, action_horizon=10, discrete_state_input=False),
         data=LeRobotLiberoDataConfig(
@@ -955,6 +1195,73 @@ _CONFIGS = [
         overwrite=True,
         exp_name="debug_pi05",
         wandb_enabled=False,
+    ),
+    #
+    # VLABench configs
+    #
+    TrainConfig(
+        name="pi0_vlabench",
+        model=pi0_config.Pi0Config(),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="/home/leesangoh/datasets/vlabench_select_painting",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        batch_size=256,
+        exp_name="vlabench",
+        wandb_enabled=True,
+    ),
+    TrainConfig(
+        name="pi0_fast_vlabench",
+        model=pi0_fast.Pi0FASTConfig(),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="joey/vlabench_base_new",
+        ),
+        batch_size=256,
+        exp_name="fast_vlabench",
+        wandb_enabled=True,
+    ),
+    TrainConfig(
+        name="pi0_vlabench_primitive_lora",
+        model=pi0_config.Pi0Config(),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="joey/vlabench_primitive_500",
+        ),
+        batch_size=256,
+        exp_name="vlabench_primitive_lora",
+        wandb_enabled=True,
+    ),
+    TrainConfig(
+        name="pi0_fast_vlabench_primitive_lora",
+        model=pi0_fast.Pi0FASTConfig(),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="joey/vlabench_primitive_500",
+        ),
+        batch_size=256,
+        exp_name="fast_vlabench_primitive_lora",
+        wandb_enabled=True,
+    ),
+    TrainConfig(
+        name="pi0_vlabench_composite_lora",
+        model=pi0_config.Pi0Config(),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="joey/vlabench_composite",
+        ),
+        batch_size=256,
+        exp_name="vlabench_composite_lora",
+        wandb_enabled=True,
+    ),
+    TrainConfig(
+        name="pi0_fast_vlabench_composite_lora",
+        model=pi0_fast.Pi0FASTConfig(),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="joey/vlabench_composite",
+        ),
+        batch_size=256,
+        exp_name="fast_vlabench_composite_lora",
+        wandb_enabled=True,
     ),
     #
     # RoboArena configs.

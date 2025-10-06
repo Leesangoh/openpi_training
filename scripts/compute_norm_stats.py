@@ -102,13 +102,27 @@ def main(config_name: str, max_frames: int | None = None):
     keys = ["state", "actions"]
     stats = {key: normalize.RunningStats() for key in keys}
 
+    debug = False
+    if debug:
+        print("[DEBUG] Debugging mode is ON")
+    else:
+        print("Debugging mode is OFF")
+    debugging_idx = 0
+
     for batch in tqdm.tqdm(data_loader, total=num_batches, desc="Computing stats"):
+        if debug and debugging_idx > 4:
+            print(f"[DEBUG] Break at {debugging_idx}:")
+            break
+
+        debugging_idx += 1
+
         for key in keys:
             stats[key].update(np.asarray(batch[key]))
 
     norm_stats = {key: stats.get_statistics() for key, stats in stats.items()}
 
     output_path = config.assets_dirs / data_config.repo_id
+    print("stats:", norm_stats)  # In case of process dies before writing to file
     print(f"Writing stats to: {output_path}")
     normalize.save(output_path, norm_stats)
 
