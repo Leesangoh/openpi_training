@@ -24,6 +24,8 @@ class Pi0Config(_model.BaseModelConfig):
     # Set the model specific defaults.
     action_dim: int = 32
     action_horizon: int = 50
+    # Dimension of the state input, if applicable
+    state_dim: int | None = None
     max_token_len: int = None  # type: ignore
     # Pi05 has two differences from Pi0:
     # - the state input is part of the discrete language tokens rather than a continuous input that is part of the suffix

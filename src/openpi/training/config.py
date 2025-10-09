@@ -98,8 +98,6 @@ class DataConfig:
     action_space: droid_rlds_dataset.DroidActionSpace | None = None
     # Path to the data filter file for DROID dataset
     filter_dict_path: str | None = None
-    # Dimension of the state input, if applicable
-    state_dim: int | None = None
 
 
 class GroupFactory(Protocol):
