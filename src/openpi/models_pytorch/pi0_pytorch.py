@@ -106,6 +106,7 @@ class PI0Pytorch(nn.Module):
         else:
             state_dim = config.action_dim
             if config.state_dim is not None:
+                logging.info(f"Using provided state_dim {config.state_dim} for PI0Pytorch model")
                 state_dim = config.state_dim
 
             self.state_proj = nn.Linear(state_dim, action_expert_config.width)

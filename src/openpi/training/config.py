@@ -288,7 +288,6 @@ class LeRobotBridgeDataConfig(DataConfigFactory):
     action_sequence_keys: Sequence[str] = ("action",)
 
     prompt_from_task: bool = True
-    state_dim = 8
 
     @override
     def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
@@ -332,7 +331,6 @@ class LeRobotBridgeDataConfig(DataConfigFactory):
             use_quantile_norm=self.use_quantile_norm,
             action_sequence_keys=self.action_sequence_keys,
             prompt_from_task=self.prompt_from_task,
-            state_dim= self.state_dim,
         )
 
 @dataclasses.dataclass(frozen=True)
@@ -345,7 +343,6 @@ class LeRobotFractalDataConfig(DataConfigFactory):
     action_sequence_keys: Sequence[str] = ("action",)
 
     prompt_from_task: bool = True
-    state_dim = 8
 
     @override
     def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
@@ -389,7 +386,6 @@ class LeRobotFractalDataConfig(DataConfigFactory):
             use_quantile_norm=self.use_quantile_norm,
             action_sequence_keys=self.action_sequence_keys,
             prompt_from_task=self.prompt_from_task,
-            state_dim= self.state_dim,
         )
 
 
@@ -935,7 +931,7 @@ _CONFIGS = [
     TrainConfig(
         ###########################################################
         name="pi0_bridge_improved",
-        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7),
+        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7, state_dim=8),
         data=LeRobotBridgeDataConfig(
             repo_id="/home/leesangoh/datasets/bridge_orig_lerobot",
             base_config=DataConfig(
@@ -994,7 +990,7 @@ _CONFIGS = [
     ),
     TrainConfig(
         name="pi0_fractal_improved",
-        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7),
+        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7, state_dim=8),
         data=LeRobotFractalDataConfig(
             repo_id="/home/leesangoh/datasets/fractal20220817_data_lerobot",
             base_config=DataConfig(
@@ -1252,7 +1248,7 @@ _CONFIGS = [
     ),
     TrainConfig(
         name="pi0_vlabench_improved",
-        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7),
+        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7, state_dim=7),
         data=LeRobotVLABenchDataConfig(
             repo_id="/home/leesangoh/datasets/vlabench_select_painting",
             base_config=DataConfig(
