@@ -1254,7 +1254,7 @@ _CONFIGS = [
             ),
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
-        batch_size=1024,
+        batch_size=512,
         num_train_steps=60_000,
         exp_name="vlabench",
         wandb_enabled=True,
