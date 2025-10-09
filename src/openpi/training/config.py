@@ -98,6 +98,8 @@ class DataConfig:
     action_space: droid_rlds_dataset.DroidActionSpace | None = None
     # Path to the data filter file for DROID dataset
     filter_dict_path: str | None = None
+    # Dimension of the state input, if applicable
+    state_dim: int | None = None
 
 
 class GroupFactory(Protocol):
@@ -288,6 +290,7 @@ class LeRobotBridgeDataConfig(DataConfigFactory):
     action_sequence_keys: Sequence[str] = ("action",)
 
     prompt_from_task: bool = True
+    state_dim = 8
 
     @override
     def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
@@ -331,6 +334,7 @@ class LeRobotBridgeDataConfig(DataConfigFactory):
             use_quantile_norm=self.use_quantile_norm,
             action_sequence_keys=self.action_sequence_keys,
             prompt_from_task=self.prompt_from_task,
+            state_dim= self.state_dim,
         )
 
 @dataclasses.dataclass(frozen=True)
@@ -343,6 +347,7 @@ class LeRobotFractalDataConfig(DataConfigFactory):
     action_sequence_keys: Sequence[str] = ("action",)
 
     prompt_from_task: bool = True
+    state_dim = 8
 
     @override
     def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
@@ -386,6 +391,7 @@ class LeRobotFractalDataConfig(DataConfigFactory):
             use_quantile_norm=self.use_quantile_norm,
             action_sequence_keys=self.action_sequence_keys,
             prompt_from_task=self.prompt_from_task,
+            state_dim= self.state_dim,
         )
 
 

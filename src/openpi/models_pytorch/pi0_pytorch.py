@@ -104,7 +104,11 @@ class PI0Pytorch(nn.Module):
             self.time_mlp_in = nn.Linear(action_expert_config.width, action_expert_config.width)
             self.time_mlp_out = nn.Linear(action_expert_config.width, action_expert_config.width)
         else:
-            self.state_proj = nn.Linear(config.action_dim, action_expert_config.width)
+            state_dim = config.action_dim
+            if config.state_dim is not None:
+                state_dim = config.state_dim
+
+            self.state_proj = nn.Linear(state_dim, action_expert_config.width)
             self.action_time_mlp_in = nn.Linear(2 * action_expert_config.width, action_expert_config.width)
             self.action_time_mlp_out = nn.Linear(action_expert_config.width, action_expert_config.width)
 
