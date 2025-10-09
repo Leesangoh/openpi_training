@@ -943,6 +943,7 @@ _CONFIGS = [
         batch_size=64,
         ema_decay=None,
         num_workers=8,
+        wandb_enabled=True,
     ),
     TrainConfig(
         name="pi0_fast_fractal",
@@ -1001,6 +1002,7 @@ _CONFIGS = [
         batch_size=64,
         ema_decay=None,
         num_workers=8,
+        wandb_enabled=True,
     ),
     TrainConfig(
         name="pi05_libero",
