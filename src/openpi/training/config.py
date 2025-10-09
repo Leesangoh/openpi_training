@@ -929,6 +929,22 @@ _CONFIGS = [
         num_workers=8,
     ),
     TrainConfig(
+        ###########################################################
+        name="pi0_bridge_improved",
+        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7),
+        data=LeRobotBridgeDataConfig(
+            repo_id="/home/leesangoh/datasets/bridge_orig_lerobot",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("s3://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
+        ema_decay=None,
+        num_workers=8,
+    ),
+    TrainConfig(
         name="pi0_fast_fractal",
         model=pi0_fast.Pi0FASTConfig(action_dim=7, action_horizon=10, max_token_len=180),
         data=LeRobotFractalDataConfig(
@@ -968,6 +984,21 @@ _CONFIGS = [
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("s3://openpi-assets/checkpoints/pi0_base/params"),
         num_train_steps=30_000,
+        ema_decay=None,
+        num_workers=8,
+    ),
+    TrainConfig(
+        name="pi0_fractal_improved",
+        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7),
+        data=LeRobotFractalDataConfig(
+            repo_id="/home/leesangoh/datasets/fractal20220817_data_lerobot",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("s3://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
         ema_decay=None,
         num_workers=8,
     ),
@@ -1210,6 +1241,21 @@ _CONFIGS = [
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
         batch_size=256,
+        exp_name="vlabench",
+        wandb_enabled=True,
+    ),
+    TrainConfig(
+        name="pi0_vlabench_improved",
+        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="/home/leesangoh/datasets/vlabench_select_painting",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        batch_size=1024,
+        num_train_steps=60_000,
         exp_name="vlabench",
         wandb_enabled=True,
     ),
