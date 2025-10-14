@@ -372,7 +372,7 @@ def train_loop(config: _config.TrainConfig):
         images_to_log = []
         # Get batch size from the first image tensor
         batch_size = next(iter(sample_batch["image"].values())).shape[0]
-        for i in range(min(5, batch_size)):
+        for i in range(min(100, batch_size)):
             # Concatenate all camera views horizontally for this batch item
             # Convert from NCHW to NHWC format for wandb
             img_concatenated = torch.cat([img[i].permute(1, 2, 0) for img in sample_batch["image"].values()], axis=1)
@@ -547,28 +547,28 @@ def train_loop(config: _config.TrainConfig):
                 losses = torch.tensor(losses, device=device, dtype=torch.float32)
 
 			############### Filter loss spikes #################
-            SPIKE_TH = 20.0
-            mask = losses < SPIKE_TH
-            masked_losses = losses[mask]
+            #SPIKE_TH = 20.0
+            #mask = losses < SPIKE_TH
+            #masked_losses = losses[mask]
 
-            if masked_losses.numel() > 0:
-                loss = masked_losses.mean()
-            else:
-                loss = losses.mean()
+            #if masked_losses.numel() > 0:
+            #    loss = masked_losses.mean()
+            #else:
+            #    loss = losses.mean()
 			
-            if is_main and config.wandb_enabled:
-                num_total = losses.numel()
-                num_masked = num_total - masked_losses.numel()
-                masked_indices = (~mask).nonzero(as_tuple=False).flatten().tolist()
-                masked_values = losses[~mask].detach().cpu().tolist()
+            #if is_main and config.wandb_enabled:
+            #    num_total = losses.numel()
+            #    num_masked = num_total - masked_losses.numel()
+            #    masked_indices = (~mask).nonzero(as_tuple=False).flatten().tolist()
+            #    masked_values = losses[~mask].detach().cpu().tolist()
 
-                wandb.log({
-                    "spike_filter/num_total": num_total,
-                    "spike_filter/num_masked": num_masked,
-                    "spike_filter/masked_ratio": num_masked / num_total if num_total > 0 else 0,
-                    "spike_filter/masked_values": masked_values,
-                    "spike_filter/masked_indices": masked_indices,
-                }, step=global_step)
+            #    wandb.log({
+            #        "spike_filter/num_total": num_total,
+            #        "spike_filter/num_masked": num_masked,
+            #        "spike_filter/masked_ratio": num_masked / num_total if num_total > 0 else 0,
+            #        "spike_filter/masked_values": masked_values,
+            #        "spike_filter/masked_indices": masked_indices,
+            #    }, step=global_step)
 			########################################################
 
 			# Backward pass
