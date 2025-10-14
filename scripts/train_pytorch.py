@@ -525,18 +525,54 @@ def train_loop(config: _config.TrainConfig):
             for pg in optim.param_groups:
                 pg["lr"] = lr_schedule(global_step)
 
-            # Forward pass
-            losses = model(observation, actions)
-            # Ensure losses is a tensor and handle different return types
-            if isinstance(losses, list | tuple):
-                losses = torch.stack(losses)
-            elif not isinstance(losses, torch.Tensor):
-                losses = torch.tensor(losses, device=device, dtype=torch.float32)
+            # # Forward pass
+            # losses = model(observation, actions)
+            # # Ensure losses is a tensor and handle different return types
+            # if isinstance(losses, list | tuple):
+            #     losses = torch.stack(losses)
+            # elif not isinstance(losses, torch.Tensor):
+            #     losses = torch.tensor(losses, device=device, dtype=torch.float32)
 
-            loss = losses.mean()
+            # loss = losses.mean()
 
-            # Backward pass
-            loss.backward()
+            # # Backward pass
+            # loss.backward()
+
+			# Forward pass
+			losses = model(observation, actions)
+			
+			if isinstance(losses, list | tuple):
+			    losses = torch.stack(losses)
+			elif not isinstance(losses, torch.Tensor):
+			    losses = torch.tensor(losses, device=device, dtype=torch.float32)
+
+			############### Filter loss spikes #################
+			SPIKE_TH = 20.0
+			mask = losses < SPIKE_TH
+			masked_losses = losses[mask]
+			
+			if masked_losses.numel() > 0:
+			    loss = masked_losses.mean()
+			else:
+			    loss = losses.mean()
+			
+			if is_main and config.wandb_enabled:
+			    num_total = losses.numel()
+			    num_masked = num_total - masked_losses.numel()
+			    masked_indices = (~mask).nonzero(as_tuple=False).flatten().tolist()
+			    masked_values = losses[~mask].detach().cpu().tolist()
+			
+			    wandb.log({
+			        "spike_filter/num_total": num_total,
+			        "spike_filter/num_masked": num_masked,
+			        "spike_filter/masked_ratio": num_masked / num_total if num_total > 0 else 0,
+			        "spike_filter/masked_values": masked_values,
+			        "spike_filter/masked_indices": masked_indices,
+			    }, step=global_step)
+			########################################################
+			
+			# Backward pass
+			loss.backward()
 
             # Log memory usage after backward pass
             if global_step < 5 and is_main and torch.cuda.is_available():
