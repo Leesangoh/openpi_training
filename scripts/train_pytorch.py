@@ -546,7 +546,7 @@ def train_loop(config: _config.TrainConfig):
             elif not isinstance(losses, torch.Tensor):
                 losses = torch.tensor(losses, device=device, dtype=torch.float32)
 
-			############### Filter loss spikes #################
+            ############### Filter loss spikes #################
             #SPIKE_TH = 20.0
             #mask = losses < SPIKE_TH
             #masked_losses = losses[mask]
@@ -555,7 +555,7 @@ def train_loop(config: _config.TrainConfig):
             #    loss = masked_losses.mean()
             #else:
             #    loss = losses.mean()
-			
+
             #if is_main and config.wandb_enabled:
             #    num_total = losses.numel()
             #    num_masked = num_total - masked_losses.numel()
@@ -569,11 +569,11 @@ def train_loop(config: _config.TrainConfig):
             #        "spike_filter/masked_values": masked_values,
             #        "spike_filter/masked_indices": masked_indices,
             #    }, step=global_step)
-			########################################################
+            ########################################################
 
-			loss = losses.mean()
+            loss = losses.mean()
 
-			# Backward pass
+            # Backward pass
             loss.backward()
 
             # Log memory usage after backward pass
