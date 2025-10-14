@@ -571,6 +571,8 @@ def train_loop(config: _config.TrainConfig):
             #    }, step=global_step)
 			########################################################
 
+			loss = losses.mean()
+
 			# Backward pass
             loss.backward()
 
