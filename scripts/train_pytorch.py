@@ -540,7 +540,7 @@ def train_loop(config: _config.TrainConfig):
 
 			# Forward pass
 			losses = model(observation, actions)
-			
+
 			if isinstance(losses, list | tuple):
 			    losses = torch.stack(losses)
 			elif not isinstance(losses, torch.Tensor):
