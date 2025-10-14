@@ -58,12 +58,14 @@ class VLABenchInputs(transforms.DataTransformFn):
             "state": state,
             "image": {
                 "base_0_rgb": base_image,
-                "left_wrist_0_rgb": wrist_image,
+                #"left_wrist_0_rgb": wrist_image,
+                "left_wrist_0_rgb": np.zeros_like(base_image), # Do not use wrist-view image to reduce noise, just like bridge/fractal datasets
                 "right_wrist_0_rgb": np.zeros_like(base_image),
             },
             "image_mask": {
                 "base_0_rgb": np.True_,
-                "left_wrist_0_rgb": np.True_,
+                #"left_wrist_0_rgb": np.True_,
+                "left_wrist_0_rgb": np.False_ if mask_padding else np.True_,
                 "right_wrist_0_rgb": np.False_ if mask_padding else np.True_,
             },
         }
