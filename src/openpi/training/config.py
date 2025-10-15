@@ -1307,6 +1307,24 @@ _CONFIGS = [
         wandb_enabled=True,
     ),
     TrainConfig(
+        name="pi0_vlabench_wo_button_lora",
+        model=pi0_config.Pi0Config(action_horizon=5, action_dim=7, state_dim=7, paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="/home/leesangoh/datasets/vlabench_select_painting_wo_button",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        batch_size=64,
+        num_train_steps=60_000,
+        freeze_filter=pi0.Pi0Config(
+            paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
+        ).get_freeze_filter(),
+        exp_name="vlabench",
+        wandb_enabled=True,
+    ),
+    TrainConfig(
         name="pi0_fast_vlabench",
         model=pi0_fast.Pi0FASTConfig(),
         data=LeRobotVLABenchDataConfig(
