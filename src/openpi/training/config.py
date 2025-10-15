@@ -1319,7 +1319,7 @@ _CONFIGS = [
         batch_size=128,
         num_train_steps=60_000,
         freeze_filter=pi0_config.Pi0Config(
-            paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
+            action_horizon=5, action_dim=7, state_dim=7, paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
         ).get_freeze_filter(),
         exp_name="vlabench",
         wandb_enabled=True,
