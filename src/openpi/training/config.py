@@ -1314,7 +1314,7 @@ _CONFIGS = [
             action_horizon=4,
         ),
         data=LeRobotVLABenchDataConfig(
-	        repo_id="/home/leesangoh/datasets/vlabench_select_painting_wo_button",
+	        repo_id="/home/leesangoh/datasets/vlabench_select_painting_wo_button_pi05",
             base_config=DataConfig(
                 prompt_from_task=True,
             ),
@@ -1331,7 +1331,7 @@ _CONFIGS = [
             action_horizon=4,
         ),
         data=LeRobotVLABenchDataConfig(
-	        repo_id="/home/leesangoh/datasets/vlabench_select_painting_wo_button",
+	        repo_id="/home/leesangoh/datasets/vlabench_select_painting_wo_button_pi05",
             base_config=DataConfig(
                 prompt_from_task=True,
             ),
