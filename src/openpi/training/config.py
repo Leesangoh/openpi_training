@@ -1321,7 +1321,7 @@ _CONFIGS = [
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
         num_train_steps=60_000,
-        batch_size=128,
+        batch_size=64,
     ),
     TrainConfig(
         name="pi05_vlabench_wo_button_droid",
@@ -1338,7 +1338,7 @@ _CONFIGS = [
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_droid/params"),
         num_train_steps=60_000,
-        batch_size=128,
+        batch_size=64,
     ),
     TrainConfig(
         name="pi0_vlabench_wo_button_lora",
