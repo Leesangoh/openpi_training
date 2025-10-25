@@ -1341,6 +1341,40 @@ _CONFIGS = [
         num_train_steps=60_000,
         batch_size=64,
     ),
+	TrainConfig(
+        name="pi05_vlabench_single_wo_button",
+        model=pi0_config.Pi0Config(
+            pi05=True,
+            action_dim=32,  # pi05 is trained with 32-dim actions
+            action_horizon=4,
+        ),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="/home/leesangoh/datasets/vlabench_select_single_painting_wo_button",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
+    ),
+    TrainConfig(
+        name="pi05_vlabench_single_wo_button_droid",
+        model=pi0_config.Pi0Config(
+            pi05=True,
+            action_dim=32,  # pi05 is trained with 32-dim actions
+            action_horizon=4,
+        ),
+        data=LeRobotVLABenchDataConfig(
+            repo_id="/home/leesangoh/datasets/vlabench_select_single_painting_wo_button",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_droid/params"),
+        num_train_steps=60_000,
+        batch_size=64,
+    ),
     TrainConfig(
         name="pi0_vlabench_wo_button_lora",
         model=pi0_config.Pi0Config(action_horizon=5, action_dim=7, state_dim=7, paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"),
