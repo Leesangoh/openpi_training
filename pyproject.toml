@@ -57,8 +57,8 @@ dev = [
 ]
 rlds = [
     "dlimp",
-    "tensorflow-cpu==2.15.0",
-    "tensorflow-datasets==4.9.9",
+    #"tensorflow-cpu==2.15.0",
+    #"tensorflow-datasets==4.9.9",
 ]
 
 [tool.uv]
