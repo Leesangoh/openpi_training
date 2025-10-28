@@ -21,6 +21,7 @@ import openpi.policies.aloha_policy as aloha_policy
 import openpi.policies.droid_policy as droid_policy
 import openpi.policies.libero_policy as libero_policy
 import openpi.policies.vlabench_policy as vlabench_policy
+import openpi.policies.so101_policy as so101_policy
 import openpi.policies.bridge_policy as bridge_policy
 import openpi.policies.fractal_policy as fractal_policy
 import openpi.shared.download as _download
@@ -507,6 +508,50 @@ class LeRobotVLABenchDataConfig(DataConfigFactory):
             prompt_from_task=self.prompt_from_task,
         )
 
+@dataclasses.dataclass(frozen=True)
+class LeRobotSO101DataConfig(DataConfigFactory):
+    """Config for training on SO101 dataset."""
+
+    repo_id: str = "fill-in-here"
+    prompt_from_task: bool = True
+
+    action_sequence_keys: Sequence[str] = ("action",)
+
+    @override
+    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
+        repack_transform = _transforms.Group(
+            inputs=[
+                _transforms.RepackTransform(
+                    {
+                        "observation.images.image_front": "observation.images.image_front",
+                        "observation.images.image_wrist": "observation.images.image_wrist",
+                        "observation.images.image_left": "observation.images.image_left",
+                        "observation.state": "observation.state",
+                        "actions": "action",
+                        "prompt": "prompt",
+                    }
+                )
+            ]
+        )
+
+        data_transforms = _transforms.Group(
+            inputs=[
+                so101_policy.SO101Inputs(action_dim=model_config.action_dim, model_type=model_config.model_type)
+            ],
+            outputs=[so101_policy.SO101Outputs()],
+        )
+
+        #model_transforms = ModelTransformFactory(learned_token_info=self.learned_token_info)(model_config)
+        model_transforms = ModelTransformFactory()(model_config)
+
+        return dataclasses.replace(
+            self.create_base_config(assets_dirs, model_config),
+            repack_transforms=repack_transform,
+            data_transforms=data_transforms,
+            model_transforms=model_transforms,
+            action_sequence_keys=self.action_sequence_keys,
+            prompt_from_task=self.prompt_from_task,
+        )
 
 @dataclasses.dataclass(frozen=True)
 class RLDSDroidDataConfig(DataConfigFactory):
@@ -1444,6 +1489,57 @@ _CONFIGS = [
         batch_size=256,
         exp_name="fast_vlabench_composite_lora",
         wandb_enabled=True,
+    ),
+	TrainConfig(
+        name="pi05_so101_all_merged",
+        model=pi0_config.Pi0Config(
+            pi05=True,
+            action_dim=32,  # pi05 is trained with 32-dim actions
+            action_horizon=4,
+        ),
+        data=LeRobotSO101DataConfig(
+            repo_id="/home/leesangoh/datasets/so101-all-merged",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
+    ),
+    TrainConfig(
+        name="pi05_so101_point_merged",
+        model=pi0_config.Pi0Config(
+            pi05=True,
+            action_dim=32,  # pi05 is trained with 32-dim actions
+            action_horizon=4,
+        ),
+        data=LeRobotSO101DataConfig(
+            repo_id="/home/leesangoh/datasets/so101-point-merged",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
+    ),
+    TrainConfig(
+        name="pi05_so101_pick_and_place_merged",
+        model=pi0_config.Pi0Config(
+            pi05=True,
+            action_dim=32,  # pi05 is trained with 32-dim actions
+            action_horizon=4,
+        ),
+        data=LeRobotSO101DataConfig(
+            repo_id="/home/leesangoh/datasets/so101-pick-and-place-merged",
+            base_config=DataConfig(
+                prmopt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
     ),
     #
     # RoboArena configs.
