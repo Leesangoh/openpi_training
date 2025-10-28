@@ -145,6 +145,12 @@ def create_torch_dataset(
         },
     )
 
+    if type(dataset_meta.tasks) is pd.core.frame.DataFrame:
+        # convert this to a list of json strings
+        #dataset_meta.tasks = dataset_meta.tasks.reset_index().rename(columns={"index": "task"}).to_dict(orient="records")
+        tasks_df = dataset_meta.tasks.reset_index().rename(columns={"index": "task"})
+        dataset_meta.tasks = dict(zip(tasks_df["task_index"], tasks_df["task"]))
+
     if data_config.prompt_from_task:
         dataset = TransformedDataset(dataset, [_transforms.PromptFromLeRobotTask(dataset_meta.tasks)])
 
