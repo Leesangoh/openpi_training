@@ -1534,7 +1534,7 @@ _CONFIGS = [
         data=LeRobotSO101DataConfig(
             repo_id="/home/leesangoh/datasets/so101-pick-and-place-merged",
             base_config=DataConfig(
-                prmopt_from_task=True,
+                prompt_from_task=True,
             ),
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
