@@ -1508,6 +1508,57 @@ _CONFIGS = [
         num_train_steps=60_000,
         batch_size=64,
     ),
+	TrainConfig(
+        name="pi05_so101_all_merged_horizon_8",
+        model=pi0_config.Pi0Config(
+            pi05=True,
+            action_dim=32,  # pi05 is trained with 32-dim actions
+            action_horizon=8,
+        ),
+        data=LeRobotSO101DataConfig(
+            repo_id="/home/leesangoh/datasets/so101-all-merged-horizon-8",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
+    ),
+    TrainConfig(
+        name="pi05_so101_all_merged_horizon_16",
+        model=pi0_config.Pi0Config(
+            pi05=True,
+            action_dim=32,  # pi05 is trained with 32-dim actions
+            action_horizon=16,
+        ),
+        data=LeRobotSO101DataConfig(
+            repo_id="/home/leesangoh/datasets/so101-all-merged-horizon-16",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
+    ),
+    TrainConfig(
+        name="pi05_so101_all_merged_horizon_32",
+        model=pi0_config.Pi0Config(
+            pi05=True,
+            action_dim=32,  # pi05 is trained with 32-dim actions
+            action_horizon=32,
+        ),
+        data=LeRobotSO101DataConfig(
+            repo_id="/home/leesangoh/datasets/so101-all-merged-horizon-32",
+            base_config=DataConfig(
+                prompt_from_task=True,
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        num_train_steps=60_000,
+        batch_size=64,
+    ),
     TrainConfig(
         name="pi05_so101_point_merged",
         model=pi0_config.Pi0Config(
